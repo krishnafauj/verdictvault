@@ -1,25 +1,12 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import multer from 'multer';
-import { create } from 'ipfs-http-client';
+import axios from 'axios';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import dotenv from 'dotenv';
 
-// MongoDB Connection
-mongoose.connect("mongodb://localhost:27017/ipfsfiles", { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((err) => console.log('MongoDB connection error:', err));
-
-// Create a Schema for File
-const fileSchema = new mongoose.Schema({
-  fileName: String,
-  cid: String,
-  uploadedAt: { type: Date, default: Date.now }
-});
-const File = mongoose.model('File', fileSchema);
-
-// Initialize IPFS Client
-const ipfs = create({ url: 'http://127.0.0.1:5001/api/v0' });
+// Load environment variables from .env file
+dotenv.config();
 
 // Express Setup
 const app = express();
@@ -32,7 +19,12 @@ app.use(bodyParser.json());
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// Route to upload a file and save CID to MongoDB
+// Pinata API credentials from environment variables
+const PINATA_API_KEY = process.env.PINATA_API_KEY;
+const PINATA_API_SECRET = process.env.PINATA_API_SECRET;
+const JWT = process.env.JWT;  // For JWT, you can use it if needed
+
+// Route to upload a file and return CID from Pinata
 app.post('/upload', upload.single('file'), async (req, res) => {
   if (!req.file) {
     return res.status(400).send('No file uploaded');
@@ -40,46 +32,45 @@ app.post('/upload', upload.single('file'), async (req, res) => {
 
   try {
     const file = req.file.buffer;
-    const addedFile = await ipfs.add(file);
-    const cid = addedFile.path;
-    const fileName = req.file.originalname;
 
-    // Save file details to MongoDB
-    const fileDoc = new File({ fileName, cid });
-    await fileDoc.save();
+    // Convert the buffer to a Blob (for browser compatibility)
+    const blob = new Blob([file], { type: 'application/octet-stream' });
 
+    // Use Pinata API to upload file
+    const formData = new FormData();
+    formData.append('file', blob, 'file');
+
+    const response = await axios.post('https://api.pinata.cloud/pinning/pinFileToIPFS', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        pinata_api_key: PINATA_API_KEY,
+        pinata_secret_api_key: PINATA_API_SECRET,
+      }
+    });
+
+    const cid = response.data.IpfsHash;
+
+    // Return CID in the response
     res.json({ cid });
   } catch (error) {
-    console.error('Error uploading file to IPFS:', error);
+    console.error('Error uploading file to Pinata:', error);
     res.status(500).send('Error uploading file to IPFS');
   }
 });
 
-// Route to fetch all files from MongoDB
-app.get('/files', async (req, res) => {
-  try {
-    const files = await File.find();
-    res.json(files);
-  } catch (error) {
-    res.status(500).send('Error retrieving files');
-  }
-});
-
-// Route to retrieve a file from IPFS by CID
-app.get('/retrieve/:cid', async (req, res) => {
+// Route to retrieve a file from IPFS by CID (using Pinata gateway)
+app.get('/retrieve/:cid', (req, res) => {
   const { cid } = req.params;
-  try {
-    const stream = ipfs.cat(cid);
-    let content = Buffer.alloc(0);
+  const fileUrl = `https://gateway.pinata.cloud/ipfs/${cid}`;
 
-    for await (const chunk of stream) {
-      content = Buffer.concat([content, chunk]);
-    }
-    res.send(content); // Return file content
-  } catch (error) {
-    console.error('Error retrieving file from IPFS:', error);
-    res.status(500).send('Error retrieving file');
-  }
+  axios.get(fileUrl)
+    .then(response => {
+      res.send(response.data);
+    })
+    .catch(error => {
+      console.error('Error retrieving file from Pinata:', error);
+      res.status(500).send('Error retrieving file');
+    });
 });
 
 // Start the server

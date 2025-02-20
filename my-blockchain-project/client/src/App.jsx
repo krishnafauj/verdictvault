@@ -15,7 +15,9 @@ import JudgeLogin from './judge/judgelogin';
 import Judge from './judge/judge';
 import UploadToIPFS from './New';
 import Fileipfs from './judge/index3';
- 
+import CasePage from './casepage/CasePage';
+import PreventBackNavigation from './PreventBackNavigation';
+
 function App() {
   return (
     <Router>
@@ -38,6 +40,7 @@ function App() {
           <Route path="/judge" element={<Judge/>} />
           <Route path="/upload" element={<UploadToIPFS/>} /> 
           <Route path="/fileips" element={<Fileipfs/>} /> 
+          <Route path="/caseview" element={<CasePage/>} />
           
         </Routes>
       </div>

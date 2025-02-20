@@ -17,6 +17,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "ipfs": "^0.66.1",
     "ipfs-http-client": "^60.0.1",
     "mongoose": "^8.8.2",
     "nodemon": "^3.1.7",

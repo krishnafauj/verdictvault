@@ -1,16 +1,28 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';  // Import the navigate function from react-router-dom
+import { useNavigate } from 'react-router-dom';
 
 function RegisterForm() {
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);  // State for loading indicator
   const navigate = useNavigate();  // Hook for navigation
 
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
 
+    // Basic email validation
+    if (!regEmail.match(/\S+@\S+\.\S+/)) {
+      setErrorMessage('Please enter a valid email address.');
+      return;
+    }
+
+    // Clear any previous error messages
+    setErrorMessage('');
+    setLoading(true);  // Set loading to true while waiting for the request
+
     const userData = { email: regEmail, password: regPassword };
+
     try {
       const response = await fetch('http://localhost:5000/register/user', {
         method: 'POST',
@@ -25,18 +37,22 @@ function RegisterForm() {
       if (response.ok) {
         console.log('User successfully registered in the database');
         setErrorMessage('');
+        setRegEmail('');  // Clear email field
+        setRegPassword('');  // Clear password field
 
         // Show the transaction hash in an alert
         alert(`Transaction Hash: ${result.transactionHash}`);
 
         // Redirect to police login page after successful registration
-        navigate('/policelogin');  // Redirect to policelogin page
+        navigate('/policelogin');
       } else {
         setErrorMessage(result.message || 'Failed to register user');
       }
     } catch (error) {
       console.error('Error during registration:', error);
       setErrorMessage('Registration failed due to an error.');
+    } finally {
+      setLoading(false);  // Set loading to false after the request is finished
     }
   };
 
@@ -50,7 +66,10 @@ function RegisterForm() {
             type="email"
             id="regEmail"
             value={regEmail}
-            onChange={(e) => setRegEmail(e.target.value)}
+            onChange={(e) => {
+              setRegEmail(e.target.value);
+              setErrorMessage('');  // Clear error when the user starts typing
+            }}
             required
             className="w-full px-4 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
             placeholder="Enter Email"
@@ -62,20 +81,26 @@ function RegisterForm() {
             type="password"
             id="regPassword"
             value={regPassword}
-            onChange={(e) => setRegPassword(e.target.value)}
+            onChange={(e) => {
+              setRegPassword(e.target.value);
+              setErrorMessage('');  // Clear error when the user starts typing
+            }}
             required
             className="w-full px-4 py-2 mt-1 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
             placeholder="Enter Password"
           />
         </div>
+
         {errorMessage && (
           <div className="text-red-500 text-sm">{errorMessage}</div> // Display error message if any
         )}
+
         <button
           type="submit"
           className="w-full py-2 mt-4 text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+          disabled={loading}  // Disable button while loading
         >
-          Register
+          {loading ? 'Registering...' : 'Register'}
         </button>
       </form>
     </div>

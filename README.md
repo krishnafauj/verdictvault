@@ -1,8 +1,5 @@
-Verdict Vault
-
-Verdict Vault is a blockchain-based system designed to streamline the entire legal filing process, from police case filing to advocate file submissions, 
-which are then securely stored in IPFS before being reviewed by the jurisdiction panel. It leverages Ganache for local blockchain deployment, Truffle for smart contract management, 
-IPFS for decentralized file storage, and MongoDB for storing additional metadata.
+Verdict Vault ⚖️
+Verdict Vault is a blockchain-based system designed to streamline the entire legal filing process, from police case filing to advocate file submissions, which are then securely stored in IPFS before being reviewed by the jurisdiction panel. It leverages Ganache for local blockchain deployment, Truffle for smart contract management, IPFS for decentralized file storage, and MongoDB for storing additional metadata.
 
 🚀 Features
 
@@ -15,6 +12,8 @@ Smart Contracts: Developed with Truffle to handle case transactions and ensure t
 Decentralized File Storage: Uses IPFS to securely store case-related documents.
 
 Database Support: Stores additional metadata and non-critical information in MongoDB.
+
+Email Alerts: With the help of EmailJS, users can receive notifications about case updates and case registrations.
 
 🛠️ Tech Stack
 

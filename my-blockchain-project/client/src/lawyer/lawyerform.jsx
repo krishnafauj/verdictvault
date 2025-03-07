@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import emailjs from '@emailjs/browser';
 function LawyerForm() {
   const navigate = useNavigate(); 
   const location = useLocation();
@@ -41,7 +40,7 @@ function LawyerForm() {
     try {
       console.log("Starting file upload...");
 
-      const response = await axios.post('http://localhost:3001/upload', formData, {
+      const response = await axios.post('http://localhost:3002/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -107,9 +106,6 @@ function LawyerForm() {
         documents: lawyer.documents,
       });
 
-    alert('Submission successful:', response.data);
-    navigate('/lawyer', { state: { email: lawyer.email, blockchain } });
-
     } 
     catch (error) {
       console.error('Error submitting data:', error);
@@ -118,27 +114,12 @@ function LawyerForm() {
 
   return (
     <div className='bg-zinc-800 min-vh-100'>
-       <div>
-              <Link to="/lawyer">
-                <img className='w-10 h10'
-                  src="https://cdn-icons-png.flaticon.com/256/189/189252.png"
-                  alt="Go to Police Login"
-                  title="Go back to Lawyer login page"
-                />
-              </Link>
-      
-            </div>
+     
       <div className="max-w-lg mx-auto p-4 bg-white shadow rounded-lg">
-        <h2 className="text-2xl font-bold text-center mb-4">Lawyer Document Form</h2>
+        <h2 className="text-2xl font-bold text-center mb-4"> Document IPFS Form</h2>
 
         <form onSubmit={handleSubmit}>
-          <p className="text-center">Lawyer ID: {email}</p>
-          {
-            blockchain
-              ? <p className="text-center text-green-500 font-bold">Victim Email: {email}</p>
-              : <p className="text-center text-red-500 font-bold">Blockchain Number: Not Available</p>
-          }
-
+         
           <h3 className="text-xl font-semibold mb-2">Documents</h3>
           {lawyer.documents.map((document, index) => (
             <div key={index} className="mb-4 p-4 border rounded-lg bg-gray-50">
@@ -181,13 +162,7 @@ function LawyerForm() {
             </div>
           ))}
 
-          <button
-            type="button"
-            onClick={handleAddDocument}
-            className="w-full py-2 mt-4 text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            Add Document
-          </button>
+          
 
           <button
             type="submit"

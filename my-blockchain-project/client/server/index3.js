@@ -10,7 +10,7 @@ dotenv.config();
 
 // Express Setup
 const app = express();
-const port = 3001;
+const port = 3002;
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -58,7 +58,6 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   }
 });
 
-// Route to retrieve a file from IPFS by CID (using Pinata gateway)
 app.get('/retrieve/:cid', (req, res) => {
   const { cid } = req.params;
   const fileUrl = `https://gateway.pinata.cloud/ipfs/${cid}`;
